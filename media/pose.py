@@ -22,7 +22,7 @@ def calculate_angle(a, b, c):
     return angle
 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 counter = 0
 stage = None
@@ -93,48 +93,56 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
             # print(tuple(np.multiply(elbow, [640, 480]).astype(int)))
 
-            if right_knee_angle < 110 or left_knee_angle < 110:
-                if len(start) == 0:
-                    start_time = datetime.datetime.now().replace(microsecond=0)
-                    start.append(start_time)
+        # if right_knee_angle < 130 or left_knee_angle < 130:
 
-                warning_message = ''
-                exercise_time = datetime.datetime.now().replace(microsecond=0) - start[0]
+            if right_elbow_angle < 60 and left_elbow_angle < 60:
+                stage = 'down'
+            if right_elbow_angle > 150 and left_elbow_angle > 150 and stage == 'down':
+                stage = 'up'
+                counter += 1
+                print(counter)
 
-                if right_shoulder_angle < 45 or right_shoulder_angle > 60 or left_shoulder_angle < 45 or left_shoulder_angle > 60:
-                    warning_message = 'shoulder wrong'
-                    mp_drawing.draw_landmarks(
-                        img,
-                        results.pose_landmarks,
-                        mp_pose.POSE_CONNECTIONS,
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
-                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                    )
-                if right_elbow_angle < 60 or left_elbow_angle < 60:
-                    warning_message = 'elbow wrong'
-                    mp_drawing.draw_landmarks(
-                        img,
-                        results.pose_landmarks,
-                        mp_pose.POSE_CONNECTIONS,
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
-                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                    )
-            else:
-                warning_message = ''
-                start.clear()
-                empty = datetime.datetime.now().replace(microsecond=0) - datetime.datetime.now().replace(microsecond=0)
-                exercise_time = empty
+            if len(start) == 0:
+                start_time = datetime.datetime.now().replace(microsecond=0)
+                start.append(start_time)
 
+            warning_message = ''
+            exercise_time = datetime.datetime.now().replace(microsecond=0) - start[0]
+
+            if right_shoulder_angle < 45 or right_shoulder_angle > 60 or left_shoulder_angle < 45 or left_shoulder_angle > 60:
+                warning_message = 'shoulder wrong'
                 mp_drawing.draw_landmarks(
                     img,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
                     mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
+                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
+            if right_elbow_angle < 60 or left_elbow_angle < 60:
+                warning_message = 'elbow wrong'
+                mp_drawing.draw_landmarks(
+                    img,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
+                    # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+                )
+        # else:
+            warning_message = ''
+            # start.clear()
+            # empty = datetime.datetime.now().replace(microsecond=0) - datetime.datetime.now().replace(microsecond=0)
+            # exercise_time = empty
+
+            mp_drawing.draw_landmarks(
+                img,
+                results.pose_landmarks,
+                mp_pose.POSE_CONNECTIONS,
+                mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
+                mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
+                # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+            )
 
             cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
             cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
