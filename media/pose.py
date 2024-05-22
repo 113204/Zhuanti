@@ -23,6 +23,7 @@ def calculate_angle(a, b, c):
 
 
 cap = cv2.VideoCapture(0)
+# cap1 = cv2.VideoCapture(1)
 
 counter = 0
 stage = None
@@ -33,16 +34,22 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
     while cap.isOpened():
         ret, img = cap.read()
+        # ret1, img1 = cap1.read()
 
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
-
         results = pose.process(image)
-
         image.flags.writeable = True
         image = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
+        # image1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        # image1.flags.writeable = False
+        # results_1 = pose.process(image1)
+        # image1.flags.writeable = True
+        # image1 = cv2.cvtColor(img1, cv2.COLOR_RGB2BGR)
+
         try:
+
             landmarks = results.pose_landmarks.landmark
 
             left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
@@ -95,9 +102,11 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
         # if right_knee_angle < 130 or left_knee_angle < 130:
 
-            if right_elbow_angle < 60 and left_elbow_angle < 60:
+            if right_elbow_angle < 60:
                 stage = 'down'
-            if right_elbow_angle > 150 and left_elbow_angle > 150 and stage == 'down':
+            if 60 < right_elbow_angle < 150:
+                stage = 'null'
+            if right_elbow_angle > 150 and stage == 'null':
                 stage = 'up'
                 counter += 1
                 print(counter)
@@ -109,7 +118,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             warning_message = ''
             exercise_time = datetime.datetime.now().replace(microsecond=0) - start[0]
 
-            if right_shoulder_angle < 45 or right_shoulder_angle > 60 or left_shoulder_angle < 45 or left_shoulder_angle > 60:
+            if stage == 'down' and (right_shoulder_angle < 30 or right_shoulder_angle > 60):
                 warning_message = 'shoulder wrong'
                 mp_drawing.draw_landmarks(
                     img,
@@ -119,7 +128,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
-            if right_elbow_angle < 60 or left_elbow_angle < 60:
+            if right_elbow_angle < 20:
                 warning_message = 'elbow wrong'
                 mp_drawing.draw_landmarks(
                     img,
@@ -130,7 +139,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
         # else:
-            warning_message = ''
+            # warning_message = ''
             # start.clear()
             # empty = datetime.datetime.now().replace(microsecond=0) - datetime.datetime.now().replace(microsecond=0)
             # exercise_time = empty
@@ -144,6 +153,15 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
             )
 
+            # mp_drawing.draw_landmarks(
+            #     img1,
+            #     results_1.pose_landmarks,
+            #     mp_pose.POSE_CONNECTIONS,
+            #     mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
+            #     mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
+            #     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+            # )
+
             cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
             cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
             cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
@@ -153,9 +171,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             pass
 
         img = cv2.resize(img, (960, 720))
-        cv2.imshow('pose', img)
+        # img1 = cv2.resize(img1, (960, 720))
+        cv2.imshow('usb_camera', img)
+        # cv2.imshow('webcam', img1)
         if cv2.waitKey(1) == ord('q'):
             break
 
 cap.release()
+# cap1.release()
 cv2.destroyAllWindows()
