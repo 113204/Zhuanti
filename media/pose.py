@@ -1,4 +1,6 @@
+
 import datetime
+import time
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -18,7 +20,6 @@ def calculate_angle(a, b, c):
 
     if angle > 180.0:
         angle = 360 - angle
-
     return angle
 
 
@@ -28,6 +29,7 @@ cap = cv2.VideoCapture(0)
 counter = 0
 stage = None
 start = []
+danger = []
 exercise_time = 0
 
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -102,6 +104,30 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
         # if right_knee_angle < 130 or left_knee_angle < 130:
 
+            if right_elbow_angle < 20:
+                danger_time = time.time()
+                danger_time.append(danger_time)
+                die_time = time.time() - danger_time[0]
+                if die_time > 7:
+                    die_message = 'maybe die'
+                    mp_drawing.draw_landmarks(
+                        img,
+                        results.pose_landmarks,
+                        mp_pose.POSE_CONNECTIONS,
+                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
+                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
+                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+                    )
+                elif die_time > 10:
+                    die_message = 'die'
+                    mp_drawing.draw_landmarks(
+                        img,
+                        results.pose_landmarks,
+                        mp_pose.POSE_CONNECTIONS,
+                        mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=5, circle_radius=4),
+                        mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
+                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+                    )
             if right_elbow_angle < 60:
                 stage = 'down'
             if 60 < right_elbow_angle < 150:
@@ -124,8 +150,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     img,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
+                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
             if right_elbow_angle < 20:
@@ -134,8 +160,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     img,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                    mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
+                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
         # else:
@@ -148,8 +174,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 img,
                 results.pose_landmarks,
                 mp_pose.POSE_CONNECTIONS,
-                mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
+                mp_drawing.DrawingSpec(color=(37, 216, 195), thickness=5, circle_radius=4),
+                mp_drawing.DrawingSpec(color=(141, 190, 104), thickness=2, circle_radius=2),
                 # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
             )
 
@@ -164,8 +190,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
             cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
+            cv2.rectangle(img, (550, 0), (650, 40), (0, 0, 255), -1)
             cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
             cv2.putText(img, str(warning_message), (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+            cv2.putText(img, str(counter), (580, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
 
         except:
             pass
