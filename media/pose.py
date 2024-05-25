@@ -24,10 +24,10 @@ def calculate_angle(a, b, c):
 
 
 cap = cv2.VideoCapture(0)
-# cap1 = cv2.VideoCapture(1)
 
 counter = 0
 stage = None
+begin = []
 start = []
 danger = []
 exercise_time = 0
@@ -36,19 +36,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
     while cap.isOpened():
         ret, img = cap.read()
-        # ret1, img1 = cap1.read()
 
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
         results = pose.process(image)
         image.flags.writeable = True
         image = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-
-        # image1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
-        # image1.flags.writeable = False
-        # results_1 = pose.process(image1)
-        # image1.flags.writeable = True
-        # image1 = cv2.cvtColor(img1, cv2.COLOR_RGB2BGR)
 
         try:
 
@@ -88,123 +81,119 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             right_elbow_angle = calculate_angle(right_shoulder, right_elbow, right_wrist)
             right_knee_angle = calculate_angle(right_hip, right_knee, right_ankle)
 
+            if right_elbow_angle > 150:
+                if len(start) == 0:
+                    start_time = time.time()
+                    start.append(start_time)
+                started_time = time.time() - start[0]
+                print(started_time)
+            elif right_elbow_angle < 150 and started_time < 3:
+                start.clear()
+
+            if len(begin) == 0:
+                begin_time = datetime.datetime.now().replace(microsecond=0)
+                begin.append(begin_time)
+            exercise_time = datetime.datetime.now().replace(microsecond=0) - begin[0]
+            # warning_message = ''
+
+            if started_time > 3:
+                if right_elbow_angle < 20:
+                    warning_message = 'elbow wrong'
+                    joint_color = (255, 255, 0)
+                    color = (255, 255, 0)
+
+                    if len(danger) == 0:
+                        danger_time = time.time()
+                        danger.append(danger_time)
+                    die_time = time.time() - danger[0]
+
+                    if die_time > 10:
+                        die_message = 'die'
+                        joint_color = (0, 0, 255)
+                        color = (0, 0, 255)
+                    elif die_time > 7:
+                        die_message = 'maybe die'
+                        joint_color = (0, 255, 255)
+                        color = (0, 255, 255)
+                elif 20 < right_elbow_angle < 60:
+                    stage = 'down'
+                    joint_color = (37, 216, 195)
+                    color = (141, 190, 104)
+                elif stage == 'down' and (right_shoulder_angle < 20 or right_shoulder_angle > 60):
+                    warning_message = 'shoulder wrong'
+                    joint_color = (255, 255, 0)
+                    color = (255, 255, 0)
+                elif 60 < right_elbow_angle < 150:
+                    stage = 'null'
+                    joint_color = (37, 216, 195)
+                    color = (141, 190, 104)
+                elif right_elbow_angle > 150 and stage == 'null':
+                    stage = 'up'
+                    counter += 1
+                    joint_color = (37, 216, 195)
+                    color = (141, 190, 104)
+                    print(counter)
+
+                mp_drawing.draw_landmarks(
+                    img,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=joint_color, thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=color, thickness=2, circle_radius=2),
+                    # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+                )
+
+                cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
+                cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
+                cv2.rectangle(img, (550, 0), (650, 40), (0, 0, 255), -1)
+                cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
+                            cv2.LINE_AA)
+                cv2.putText(img, str(warning_message), (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+                cv2.putText(img, str(counter), (580, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
+            else:
+                warning_message = ''
+                begin.clear()
+                empty = datetime.datetime.now().replace(microsecond=0) - datetime.datetime.now().replace(microsecond=0)
+                exercise_time = empty
+
+                mp_drawing.draw_landmarks(
+                    img,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=(37, 216, 195), thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=(141, 190, 104), thickness=2, circle_radius=2),
+                    # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
+                )
+
+                cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
+                cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
+                cv2.rectangle(img, (550, 0), (650, 40), (0, 0, 255), -1)
+                cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.putText(img, str(warning_message), (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
+                cv2.putText(img, str(counter), (580, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
             cv2.putText(img, str(int(left_elbow_angle)), tuple(np.multiply(left_elbow, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
-            cv2.putText(img, str(int(left_shoulder_angle)), tuple(np.multiply(left_shoulder, [640, 480]).astype(int)),
+            cv2.putText(img, str(int(left_shoulder_angle)),
+                        tuple(np.multiply(left_shoulder, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
             cv2.putText(img, str(int(left_knee_angle)), tuple(np.multiply(left_knee, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
             cv2.putText(img, str(int(right_elbow_angle)), tuple(np.multiply(right_elbow, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
-            cv2.putText(img, str(int(right_shoulder_angle)), tuple(np.multiply(right_shoulder, [640, 480]).astype(int)),
+            cv2.putText(img, str(int(right_shoulder_angle)),
+                        tuple(np.multiply(right_shoulder, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
             cv2.putText(img, str(int(right_knee_angle)), tuple(np.multiply(right_knee, [640, 480]).astype(int)),
                         cv2.FONT_ITALIC, 1, (0, 0, 255), 2)
-            # print(tuple(np.multiply(elbow, [640, 480]).astype(int)))
-
-        # if right_knee_angle < 130 or left_knee_angle < 130:
-
-            if right_elbow_angle < 20:
-                danger_time = time.time()
-                danger_time.append(danger_time)
-                die_time = time.time() - danger_time[0]
-                if die_time > 7:
-                    die_message = 'maybe die'
-                    mp_drawing.draw_landmarks(
-                        img,
-                        results.pose_landmarks,
-                        mp_pose.POSE_CONNECTIONS,
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-                        mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=2, circle_radius=2),
-                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                    )
-                elif die_time > 10:
-                    die_message = 'die'
-                    mp_drawing.draw_landmarks(
-                        img,
-                        results.pose_landmarks,
-                        mp_pose.POSE_CONNECTIONS,
-                        mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=5, circle_radius=4),
-                        mp_drawing.DrawingSpec(color=(0, 0, 255), thickness=2, circle_radius=2),
-                        # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                    )
-            if right_elbow_angle < 60:
-                stage = 'down'
-            if 60 < right_elbow_angle < 150:
-                stage = 'null'
-            if right_elbow_angle > 150 and stage == 'null':
-                stage = 'up'
-                counter += 1
-                print(counter)
-
-            if len(start) == 0:
-                start_time = datetime.datetime.now().replace(microsecond=0)
-                start.append(start_time)
-
-            warning_message = ''
-            exercise_time = datetime.datetime.now().replace(microsecond=0) - start[0]
-
-            if stage == 'down' and (right_shoulder_angle < 30 or right_shoulder_angle > 60):
-                warning_message = 'shoulder wrong'
-                mp_drawing.draw_landmarks(
-                    img,
-                    results.pose_landmarks,
-                    mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=5, circle_radius=4),
-                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
-                    # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                )
-            if right_elbow_angle < 20:
-                warning_message = 'elbow wrong'
-                mp_drawing.draw_landmarks(
-                    img,
-                    results.pose_landmarks,
-                    mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=5, circle_radius=4),
-                    mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
-                    # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-                )
-        # else:
-            # warning_message = ''
-            # start.clear()
-            # empty = datetime.datetime.now().replace(microsecond=0) - datetime.datetime.now().replace(microsecond=0)
-            # exercise_time = empty
-
-            mp_drawing.draw_landmarks(
-                img,
-                results.pose_landmarks,
-                mp_pose.POSE_CONNECTIONS,
-                mp_drawing.DrawingSpec(color=(37, 216, 195), thickness=5, circle_radius=4),
-                mp_drawing.DrawingSpec(color=(141, 190, 104), thickness=2, circle_radius=2),
-                # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-            )
-
-            # mp_drawing.draw_landmarks(
-            #     img1,
-            #     results_1.pose_landmarks,
-            #     mp_pose.POSE_CONNECTIONS,
-            #     mp_drawing.DrawingSpec(color=(0, 255, 255), thickness=5, circle_radius=4),
-            #     mp_drawing.DrawingSpec(color=(255, 255, 0), thickness=2, circle_radius=2),
-            #     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
-            # )
-
-            cv2.rectangle(img, (0, 0), (140, 40), (255, 0, 0), -1)
-            cv2.rectangle(img, (200, 0), (450, 40), (0, 255, 255), -1)
-            cv2.rectangle(img, (550, 0), (650, 40), (0, 0, 255), -1)
-            cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(img, str(warning_message), (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1)
-            cv2.putText(img, str(counter), (580, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
-
         except:
             pass
 
         img = cv2.resize(img, (960, 720))
-        # img1 = cv2.resize(img1, (960, 720))
         cv2.imshow('usb_camera', img)
-        # cv2.imshow('webcam', img1)
         if cv2.waitKey(1) == ord('q'):
             break
 
 cap.release()
-# cap1.release()
 cv2.destroyAllWindows()
