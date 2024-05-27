@@ -86,7 +86,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     start_time = time.time()
                     start.append(start_time)
                 started_time = time.time() - start[0]
-                print(started_time)
+                # print(started_time)
             elif right_elbow_angle < 150 and started_time < 3:
                 start.clear()
 
@@ -94,7 +94,17 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 begin_time = datetime.datetime.now().replace(microsecond=0)
                 begin.append(begin_time)
             exercise_time = datetime.datetime.now().replace(microsecond=0) - begin[0]
-            # warning_message = ''
+
+            if int(started_time) == 1:
+                show_time = 3
+            elif int(started_time) == 2:
+                show_time = 2
+            elif int(started_time) == 3:
+                show_time = 1
+            else:
+                show_time = ''
+            cv2.putText(img, str(show_time), (40, 450), cv2.FONT_HERSHEY_SIMPLEX, 6, (255, 255, 255), 7,
+                        cv2.LINE_AA)
 
             if started_time > 3:
                 if right_elbow_angle < 20:
@@ -115,25 +125,36 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         die_message = 'maybe die'
                         joint_color = (0, 255, 255)
                         color = (0, 255, 255)
-                elif 20 < right_elbow_angle < 60:
+
+                elif 20 < right_elbow_angle < 50 and right_shoulder_angle < 60:
+                    danger.clear()
                     stage = 'down'
+                    warning_message = ''
                     joint_color = (37, 216, 195)
                     color = (141, 190, 104)
-                elif stage == 'down' and (right_shoulder_angle < 20 or right_shoulder_angle > 60):
+                elif 50 < right_elbow_angle < 150 and right_shoulder_angle > 60:
+                    stage = 'null'
+                    warning_message = ''
+                    joint_color = (37, 216, 195)
+                    color = (141, 190, 104)
+
+                if stage == 'down' and (right_shoulder_angle < 30 or right_shoulder_angle > 60):
                     warning_message = 'shoulder wrong'
                     joint_color = (255, 255, 0)
                     color = (255, 255, 0)
-                elif 60 < right_elbow_angle < 150:
-                    stage = 'null'
-                    joint_color = (37, 216, 195)
-                    color = (141, 190, 104)
-                elif right_elbow_angle > 150 and stage == 'null':
+                elif stage == 'down' and right_elbow_angle > 50:
+                    warning_message = 'elbow wrong'
+                    joint_color = (255, 255, 0)
+                    color = (255, 255, 0)
+
+                if right_elbow_angle > 150 and stage == 'null':
                     stage = 'up'
+                    warning_message = ''
                     counter += 1
                     joint_color = (37, 216, 195)
                     color = (141, 190, 104)
                     print(counter)
-
+                print(stage)
                 mp_drawing.draw_landmarks(
                     img,
                     results.pose_landmarks,
