@@ -37,7 +37,7 @@ while True:
     ret, frame = video_capture.read()
 
     face_locations = face_recognition.face_locations(frame, model='cnn')
-    face_encodings = face_recognition.face_encodings(frame, face_locations)
+    face_encodings = face_recognition.face_encodings(frame, face_locations, model='large')
 
     for(top, right, bottom, left), face_encodings in zip(face_locations, face_encodings):
         matches = face_recognition.compare_faces(known_faces_encodings, face_encodings)
