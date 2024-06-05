@@ -24,7 +24,7 @@ def calculate_angle(a, b, c):
     return angle
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 counter = 0
 stage = None
@@ -117,7 +117,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             if started_time > 3:
                 if right_elbow_angle < 30 and left_elbow_angle < 30:
-                    warning_message = 'Please hold your right and left hands outwards'
+                    warning_message = 'Please hold your hands outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
@@ -130,7 +130,8 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         die_message = 'die'
                         joint_color = (0, 0, 255)
                         color = (0, 0, 255)
-                        winsound.Beep(freq, duration)
+                        for i in range(0, 5):
+                            winsound.Beep(freq, duration)
                     elif die_time > 7:
                         die_message = 'maybe die'
                         joint_color = (0, 133, 242)
@@ -141,40 +142,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
-                    if len(danger) == 0:
-                        danger_time = time.time()
-                        danger.append(danger_time)
-                    die_time = time.time() - danger[0]
-
-                    if die_time > 10:
-                        die_message = 'die'
-                        joint_color = (0, 0, 255)
-                        color = (0, 0, 255)
-                        winsound.Beep(freq, duration)
-                    elif die_time > 7:
-                        die_message = 'maybe die'
-                        joint_color = (0, 133, 242)
-                        color = (0, 133, 242)
-
                 elif left_elbow_angle < 30:
                     warning_message = 'Please hold your left hand outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
-
-                    if len(danger) == 0:
-                        danger_time = time.time()
-                        danger.append(danger_time)
-                    die_time = time.time() - danger[0]
-
-                    if die_time > 10:
-                        die_message = 'die'
-                        joint_color = (0, 0, 255)
-                        color = (0, 0, 255)
-                        winsound.Beep(freq, duration)
-                    elif die_time > 7:
-                        die_message = 'maybe die'
-                        joint_color = (0, 133, 242)
-                        color = (0, 133, 242)
 
                 elif 30 < right_elbow_angle < 50 and right_shoulder_angle < 60 and 30 < left_elbow_angle < 50 and left_shoulder_angle < 60:
                     danger.clear()
@@ -220,7 +191,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_elbow_angle > 50 and left_elbow_angle > 50:
-                    warning_message = 'Please hold your left and right hands inwards'
+                    warning_message = 'Please hold your hands inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
