@@ -9,29 +9,13 @@ known_faces_names = []
 # print(known_faces_encodings)
 # print(known_faces_names)
 
-known_person_image = face_recognition.load_image_file("face_0316\chloe.jpg")
-known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
-known_faces_encodings.append(known_person_encoding)
-known_faces_names.append('chloe')
-
 known_person_image = face_recognition.load_image_file("face_0316\chen.jpg")
 known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
 known_faces_encodings.append(known_person_encoding)
 known_faces_names.append('david')
 
-known_person_image = face_recognition.load_image_file("face_0316\chen1.jpg")
-known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
-known_faces_encodings.append(known_person_encoding)
-known_faces_names.append('david1')
 
-
-
-known_person_image = face_recognition.load_image_file("face_0316\jamie.jpg")
-known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
-known_faces_encodings.append(known_person_encoding)
-known_faces_names.append('lixin')
-
-video_capture = cv2.VideoCapture(0)
+video_capture = cv2.VideoCapture(1)
 
 while True:
     ret, frame = video_capture.read()
