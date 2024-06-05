@@ -24,7 +24,7 @@ def calculate_angle(a, b, c):
     return angle
 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 counter = 0
 stage = None
@@ -33,7 +33,7 @@ start = []
 danger = []
 exercise_time = 0
 freq = 2000
-duration = 1000
+duration = 10000
 
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
 
@@ -117,7 +117,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
 
             if started_time > 3:
                 if right_elbow_angle < 30 and left_elbow_angle < 30:
-                    warning_message = 'Please hold your hands outwards'
+                    warning_message = 'Hold your hands outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
@@ -126,24 +126,31 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                         danger.append(danger_time)
                     die_time = time.time() - danger[0]
 
-                    if die_time > 10:
-                        die_message = 'die'
+                    if die_time > 10.3:
+                        die_message = 'WARNING!'
                         joint_color = (0, 0, 255)
                         color = (0, 0, 255)
-                        for i in range(0, 5):
+                        cv2.rectangle(img, (80, 100), (550, 200), (0, 0, 255), -1)
+                        cv2.putText(img, str(die_message), (100, 180), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255), 8,
+                                    cv2.LINE_AA)
+                        if die_time > 10.5:
                             winsound.Beep(freq, duration)
+                        
+                    elif die_time > 10:
+                        joint_color = (0, 0, 255)
+                        color = (0, 0, 255)
+                        
                     elif die_time > 7:
-                        die_message = 'maybe die'
                         joint_color = (0, 133, 242)
                         color = (0, 133, 242)
 
                 elif right_elbow_angle < 30:
-                    warning_message = 'Please hold your right hand outwards'
+                    warning_message = 'Hold your right hand outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif left_elbow_angle < 30:
-                    warning_message = 'Please hold your left hand outwards'
+                    warning_message = 'Hold your left hand outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
@@ -161,47 +168,47 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     color = (0, 255, 0)
 
                 if stage == 'down' and right_shoulder_angle < 30 and left_shoulder_angle < 30:
-                    warning_message = 'Please put your shoulders outwards'
+                    warning_message = 'Put your shoulders outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_shoulder_angle < 30:
-                    warning_message = 'Please put your right shoulder outwards'
+                    warning_message = 'Put your right shoulder outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and left_shoulder_angle < 30:
-                    warning_message = 'Please put your left shoulder outwards'
+                    warning_message = 'Put your left shoulder outwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_shoulder_angle > 60 and left_shoulder_angle > 60:
-                    warning_message = 'Please put your shoulders inwards'
+                    warning_message = 'Put your shoulders inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_shoulder_angle > 60:
-                    warning_message = 'Please put your right shoulder inwards'
+                    warning_message = 'Put your right shoulder inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and left_shoulder_angle > 60:
-                    warning_message = 'Please put your left shoulder inwards'
+                    warning_message = 'Put your left shoulder inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_elbow_angle > 50 and left_elbow_angle > 50:
-                    warning_message = 'Please hold your hands inwards'
+                    warning_message = 'Hold your hands inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and right_elbow_angle > 50:
-                    warning_message = 'Please hold your right hand inwards'
+                    warning_message = 'Hold your right hand inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
                 elif stage == 'down' and left_elbow_angle > 50:
-                    warning_message = 'Please hold your left hand inwards'
+                    warning_message = 'Hold your left hand inwards'
                     joint_color = (0, 255, 255)
                     color = (0, 255, 255)
 
@@ -213,11 +220,12 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     color = (0, 255, 0)
 
                 print(stage)
+                
                 mp_drawing.draw_landmarks(
                     img,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=joint_color, thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=joint_color, thickness=5, circle_radius=1),
                     mp_drawing.DrawingSpec(color=color, thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
@@ -227,7 +235,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                 cv2.rectangle(img, (585, 0), (650, 40), (0, 0, 255), -1)
                 cv2.putText(img, str(exercise_time), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
                             cv2.LINE_AA)
-                cv2.putText(img, str(warning_message), (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                cv2.putText(img, str(warning_message), (90, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                 cv2.putText(img, str(counter), (590, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
 
             else:
@@ -240,7 +248,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                     img,
                     results.pose_landmarks,
                     mp_pose.POSE_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(203, 192, 255), thickness=5, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=(203, 192, 255), thickness=5, circle_radius=1),
                     mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=2),
                     # landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style()
                 )
