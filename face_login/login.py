@@ -7,11 +7,10 @@ app = Flask(__name__)
 # 假設有一個保存人臉特徵的資料庫
 database = {
     "chloe": "path_to_user1_face_encoding.npy",
-    "chen": "path_to_user1_face_encoding.npy",
-    "jamie": "path_to_user1_face_encoding.npy",
-    "jenny": "path_to_user1_face_encoding.npy",
-    "epoch": "path_to_user1_face_encoding.npy"
-
+    "chen": "path_to_user2_face_encoding.npy",
+    "jamie": "path_to_user3_face_encoding.npy",
+    "jenny": "path_to_user4_face_encoding.npy",
+    "epoch": "path_to_user5_face_encoding.npy"
 }
 
 
