@@ -17,15 +17,15 @@ def extract_face_encoding(image_path):
 
 
 # 範例：提取並保存某位用戶的人臉特徵
-face_encoding = extract_face_encoding("face_photo\chloe.jpg",'chloe')
+face_encoding = extract_face_encoding("face_photo\chloe.jpg")
 np.save("user1_face_encoding.npy", face_encoding)
-face_encoding = extract_face_encoding("face_photo\chen.jpg",'chen')
+face_encoding = extract_face_encoding("face_photo\chen.jpg")
 np.save("user2_face_encoding.npy", face_encoding)
-face_encoding = extract_face_encoding("face_photo\jamie.JPG",'jamie')
+face_encoding = extract_face_encoding("face_photo\jamie.JPG")
 np.save("user3_face_encoding.npy", face_encoding)
-face_encoding = extract_face_encoding("face_photo\jenny.JPG",'jenny')
+face_encoding = extract_face_encoding("face_photo\jenny.JPG")
 np.save("user4_face_encoding.npy", face_encoding)
-face_encoding = extract_face_encoding("face_photo\epoch.JPG",'epoch')
+face_encoding = extract_face_encoding("face_photo\epoch.JPG")
 np.save("user5_face_encoding.npy", face_encoding)
 
 saved_encoding = np.load("user1_face_encoding.npy")
