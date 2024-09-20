@@ -4,24 +4,25 @@ from main import add
 
 known_faces_encodings = []
 known_faces_names = []
+
 add("face_photo\chloe.jpg",'chloe')
+add("face_photo\chen.jpg",'chen')
 add("face_photo\jamie.JPG",'jamie')
 add("face_photo\jenny.JPG",'jenny')
 add("face_photo\epoch.JPG",'epoch')
-add("face_photo\chen.jpg",'chen')
 
 print(known_faces_encodings)
 print(known_faces_names)
-
-known_person_image = face_recognition.load_image_file("face_photo\chen.jpg")
-known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
-known_faces_encodings.append(known_person_encoding)
-known_faces_names.append('david')
 
 known_person_image = face_recognition.load_image_file("face_photo\chloe.jpg")
 known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
 known_faces_encodings.append(known_person_encoding)
 known_faces_names.append('chloe')
+
+known_person_image = face_recognition.load_image_file("face_photo\chen.jpg")
+known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
+known_faces_encodings.append(known_person_encoding)
+known_faces_names.append('david')
 
 known_person_image = face_recognition.load_image_file("face_photo\jamie.JPG")
 known_person_encoding = face_recognition.face_encodings(known_person_image)[0]
